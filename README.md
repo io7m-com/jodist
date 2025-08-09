@@ -36,7 +36,7 @@ and needs to be replaced with something sane. Do not use!
 
 Here's a (boring) `HelloWorld` class:
 
-```java
+```
 package com.example.helloworld;
 
 public final class HelloWorld {
@@ -48,7 +48,7 @@ public final class HelloWorld {
 
 And this is the (exciting) code to generate it with jodist:
 
-```java
+```
 MethodSpec main = MethodSpec.methodBuilder("main")
     .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
     .returns(void.class)
@@ -74,9 +74,9 @@ that to a `HelloWorld.java` file.
 In this case we write the file to `System.out`, but we could also get it as a string
 (`JavaFile.toString()`) or write it to the file system (`JavaFile.writeTo()`).
 
-The [Javadoc][javadoc] catalogs the complete jodist API, which we explore below.
+The Javadoc catalogs the complete jodist API, which we explore below.
 
-### Code & Control Flow
+### Code And Control Flow
 
 Most of jodist's API uses plain old immutable Java objects. There's also builders, method chaining
 and varargs to make the API friendly. jodist offers models for classes & interfaces (`TypeSpec`),
@@ -86,7 +86,7 @@ annotations (`AnnotationSpec`).
 But the _body_ of methods and constructors is not modeled. There's no expression class, no
 statement class or syntax tree nodes. Instead, jodist uses strings for code blocks:
 
-```java
+```
 MethodSpec main = MethodSpec.methodBuilder("main")
     .addCode(""
         + "int total = 0;\n"
@@ -98,7 +98,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
 
 Which generates this:
 
-```java
+```
 void main() {
   int total = 0;
   for (int i = 0; i < 10; i++) {
@@ -112,7 +112,7 @@ make it easier. There's `addStatement()` which takes care of semicolons and newl
 `beginControlFlow()` + `endControlFlow()` which are used together for braces, newlines, and
 indentation:
 
-```java
+```
 MethodSpec main = MethodSpec.methodBuilder("main")
     .addStatement("int total = 0")
     .beginControlFlow("for (int i = 0; i < 10; i++)")
@@ -124,7 +124,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
 This example is lame because the generated code is constant! Suppose instead of just adding 0 to 10,
 we want to make the operation and range configurable. Here's a method that generates a method:
 
-```java
+```
 private MethodSpec computeRange(String name, int from, int to, String op) {
   return MethodSpec.methodBuilder(name)
       .returns(int.class)
@@ -139,7 +139,7 @@ private MethodSpec computeRange(String name, int from, int to, String op) {
 
 And here's what we get when we call `computeRange("multiply10to20", 10, 20, "*")`:
 
-```java
+```
 int multiply10to20() {
   int result = 1;
   for (int i = 10; i < 20; i++) {
@@ -155,7 +155,7 @@ read through it to make sure it's right.
 Some control flow statements, such as `if/else`, can have unlimited control flow possibilities.
 You can handle those options using `nextControlFlow()`:
 
-```java
+```
 MethodSpec main = MethodSpec.methodBuilder("main")
     .addStatement("long now = $T.currentTimeMillis()", System.class)
     .beginControlFlow("if ($T.currentTimeMillis() < now)", System.class)
@@ -170,7 +170,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
 
 Which generates:
 
-```java
+```
 void main() {
   long now = System.currentTimeMillis();
   if (System.currentTimeMillis() < now)  {
@@ -185,7 +185,7 @@ void main() {
 
 Catching exceptions using `try/catch` is also a use case for `nextControlFlow()`:
 
-```java
+```
 MethodSpec main = MethodSpec.methodBuilder("main")
     .beginControlFlow("try")
     .addStatement("throw new Exception($S)", "Failed")
@@ -197,7 +197,7 @@ MethodSpec main = MethodSpec.methodBuilder("main")
 
 Which produces:
 
-```java
+```
 void main() {
   try {
     throw new Exception("Failed");
@@ -207,14 +207,14 @@ void main() {
 }
 ```
 
-### $L for Literals
+### Literals
 
 The string-concatenation in calls to `beginControlFlow()` and `addStatement` is distracting. Too
 many operators. To address this, jodist offers a syntax inspired-by but incompatible-with
-[`String.format()`][formatter]. It accepts **`$L`** to emit a **literal** value in the output. This
+`String.format()`. It accepts **`$L`** to emit a **literal** value in the output. This
 works just like `Formatter`'s `%s`:
 
-```java
+```
 private MethodSpec computeRange(String name, int from, int to, String op) {
   return MethodSpec.methodBuilder(name)
       .returns(int.class)
@@ -230,13 +230,13 @@ private MethodSpec computeRange(String name, int from, int to, String op) {
 Literals are emitted directly to the output code with no escaping. Arguments for literals may be
 strings, primitives, and a few jodist types described below.
 
-### $S for Strings
+### Strings
 
 When emitting code that includes string literals, we can use **`$S`** to emit a **string**, complete
 with wrapping quotation marks and escaping. Here's a program that emits 3 methods, each of which
 returns its own name:
 
-```java
+```
 public static void main(String[] args) throws Exception {
   TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
       .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -261,7 +261,7 @@ private static MethodSpec whatsMyName(String name) {
 
 In this case, using `$S` gives us quotation marks:
 
-```java
+```
 public final class HelloWorld {
   String slimShady() {
     return "slimShady";
@@ -277,13 +277,13 @@ public final class HelloWorld {
 }
 ```
 
-### $T for Types
+### Types
 
 We Java programmers love our types: they make our code easier to understand. And jodist is on
 board. It has rich built-in support for types, including automatic generation of `import`
 statements. Just use **`$T`** to reference **types**:
 
-```java
+```
 MethodSpec today = MethodSpec.methodBuilder("today")
     .returns(Date.class)
     .addStatement("return new $T()", Date.class)
@@ -302,7 +302,7 @@ javaFile.writeTo(System.out);
 
 That generates the following `.java` file, complete with the necessary `import`:
 
-```java
+```
 package com.example.helloworld;
 
 import java.util.Date;
@@ -318,7 +318,7 @@ We passed `Date.class` to reference a class that just-so-happens to be available
 generating code. This doesn't need to be the case. Here's a similar example, but this one
 references a class that doesn't exist (yet):
 
-```java
+```
 ClassName hoverboard = ClassName.get("com.mattel", "Hoverboard");
 
 MethodSpec today = MethodSpec.methodBuilder("tomorrow")
@@ -329,7 +329,7 @@ MethodSpec today = MethodSpec.methodBuilder("tomorrow")
 
 And that not-yet-existent class is imported as well:
 
-```java
+```
 package com.example.helloworld;
 
 import com.mattel.Hoverboard;
@@ -346,7 +346,7 @@ It can identify any _declared_ class. Declared types are just the beginning of J
 system: we also have arrays, parameterized types, wildcard types, and type variables. jodist has
 classes for building each of these:
 
-```java
+```
 ClassName hoverboard = ClassName.get("com.mattel", "Hoverboard");
 ClassName list = ClassName.get("java.util", "List");
 ClassName arrayList = ClassName.get("java.util", "ArrayList");
@@ -364,7 +364,7 @@ MethodSpec beyond = MethodSpec.methodBuilder("beyond")
 
 jodist will decompose each type and import its components where possible.
 
-```java
+```
 package com.example.helloworld;
 
 import com.mattel.Hoverboard;
@@ -387,7 +387,7 @@ public final class HelloWorld {
 jodist supports `import static`. It does it via explicitly collecting type member names. Let's
 enhance the previous example with some static sugar:
 
-```java
+```
 ...
 ClassName namedBoards = ClassName.get("com.mattel", "Hoverboard", "Boards");
 
@@ -415,7 +415,7 @@ JavaFile.builder("com.example.helloworld", hello)
 jodist will first add your `import static` block to the file as configured, match and mangle
 all calls accordingly and also import all other types as needed.
 
-```java
+```
 package com.example.helloworld;
 
 import static com.mattel.Hoverboard.Boards.*;
@@ -438,12 +438,12 @@ class HelloWorld {
 }
 ```
 
-### $N for Names
+### Names
 
 Generated code is often self-referential. Use **`$N`** to refer to another generated declaration by
 its name. Here's a method that calls another:
 
-```java
+```
 public String byteToHex(int b) {
   char[] result = new char[2];
   result[0] = hexDigit((b >>> 4) & 0xf);
@@ -459,7 +459,7 @@ public char hexDigit(int i) {
 When generating the code above, we pass the `hexDigit()` method as an argument to the `byteToHex()`
 method using `$N`:
 
-```java
+```
 MethodSpec hexDigit = MethodSpec.methodBuilder("hexDigit")
     .addParameter(int.class, "i")
     .returns(char.class)
@@ -486,7 +486,7 @@ for each operation on a code block.
 Pass an argument value for each placeholder in the format string to `CodeBlock.add()`. In each
 example, we generate code to say "I ate 3 tacos"
 
-```java
+```
 CodeBlock.builder().add("I ate $L $L", 3, "tacos")
 ```
 
@@ -495,7 +495,7 @@ CodeBlock.builder().add("I ate $L $L", 3, "tacos")
 Place an integer index (1-based) before the placeholder in the format string to specify which
  argument to use.
 
-```java
+```
 CodeBlock.builder().add("I ate $2L $1L", "tacos", 3)
 ```
 
@@ -505,7 +505,7 @@ Use the syntax `$argumentName:X` where `X` is the format character and call `Cod
 with a map containing all argument keys in the format string. Argument names use characters in
 `a-z`, `A-Z`, `0-9`, and `_`, and must start with a lowercase character.
 
-```java
+```
 Map<String, Object> map = new LinkedHashMap<>();
 map.put("food", "tacos");
 map.put("count", 3);
@@ -517,7 +517,7 @@ CodeBlock.builder().addNamed("I ate $count:L $food:L", map)
 All of the above methods have a code body. Use `Modifiers.ABSTRACT` to get a method without any
 body. This is only legal if the enclosing class is either abstract or an interface.
 
-```java
+```
 MethodSpec flux = MethodSpec.methodBuilder("flux")
     .addModifiers(Modifier.ABSTRACT, Modifier.PROTECTED)
     .build();
@@ -530,14 +530,14 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
 
 Which generates this:
 
-```java
+```
 public abstract class HelloWorld {
   protected abstract void flux();
 }
 ```
 
 The other modifiers work where permitted. Note that when specifying modifiers, jodist uses
-[`javax.lang.model.element.Modifier`][modifier], a class that is not available on Android. This
+`javax.lang.model.element.Modifier`, a class that is not available on Android. This
 limitation applies to code-generating-code only; the output code runs everywhere: JVMs, Android,
 and GWT.
 
@@ -548,7 +548,7 @@ return type. All of these are configured with `MethodSpec.Builder`.
 
 `MethodSpec` is a slight misnomer; it can also be used for constructors:
 
-```java
+```
 MethodSpec flux = MethodSpec.constructorBuilder()
     .addModifiers(Modifier.PUBLIC)
     .addParameter(String.class, "greeting")
@@ -564,7 +564,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
 
 Which generates this:
 
-```java
+```
 public class HelloWorld {
   private final String greeting;
 
@@ -582,7 +582,7 @@ constructors before methods in the output file.
 Declare parameters on methods and constructors with either `ParameterSpec.builder()` or
 `MethodSpec`'s convenient `addParameter()` API:
 
-```java
+```
 ParameterSpec android = ParameterSpec.builder(String.class, "android")
     .addModifiers(Modifier.FINAL)
     .build();
@@ -596,7 +596,7 @@ MethodSpec welcomeOverlords = MethodSpec.methodBuilder("welcomeOverlords")
 Though the code above to generate `android` and `robot` parameters is different, the output is the
 same:
 
-```java
+```
 void welcomeOverlords(final String android, final String robot) {
 }
 ```
@@ -607,7 +607,7 @@ The extended `Builder` form is necessary when the parameter has annotations (suc
 
 Like parameters, fields can be created either with builders or by using convenient helper methods:
 
-```java
+```
 FieldSpec android = FieldSpec.builder(String.class, "android")
     .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
     .build();
@@ -621,7 +621,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
 
 Which generates:
 
-```java
+```
 public class HelloWorld {
   private final String android;
 
@@ -630,10 +630,10 @@ public class HelloWorld {
 ```
 
 The extended `Builder` form is necessary when a field has Javadoc, annotations, or a field
-initializer. Field initializers use the same [`String.format()`][formatter]-like syntax as the code
+initializer. Field initializers use the same `String.format()`-like syntax as the code
 blocks above:
 
-```java
+```
 FieldSpec android = FieldSpec.builder(String.class, "android")
     .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
     .initializer("$S + $L", "Lollipop v.", 5.0d)
@@ -642,7 +642,7 @@ FieldSpec android = FieldSpec.builder(String.class, "android")
 
 Which generates:
 
-```java
+```
 private final String android = "Lollipop v." + 5.0;
 ```
 
@@ -652,7 +652,7 @@ jodist has no trouble with interfaces. Note that interface methods must always b
 ABSTRACT` and interface fields must always be `PUBLIC STATIC FINAL`. These modifiers are necessary
 when defining the interface:
 
-```java
+```
 TypeSpec helloWorld = TypeSpec.interfaceBuilder("HelloWorld")
     .addModifiers(Modifier.PUBLIC)
     .addField(FieldSpec.builder(String.class, "ONLY_THING_THAT_IS_CONSTANT")
@@ -668,7 +668,7 @@ TypeSpec helloWorld = TypeSpec.interfaceBuilder("HelloWorld")
 But these modifiers are omitted when the code is generated. These are the defaults so we don't need
 to include them for `javac`'s benefit!
 
-```java
+```
 public interface HelloWorld {
   String ONLY_THING_THAT_IS_CONSTANT = "change";
 
@@ -680,7 +680,7 @@ public interface HelloWorld {
 
 Use `enumBuilder` to create the enum type, and `addEnumConstant()` for each value:
 
-```java
+```
 TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
     .addModifiers(Modifier.PUBLIC)
     .addEnumConstant("ROCK")
@@ -691,7 +691,7 @@ TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
 
 To generate this:
 
-```java
+```
 public enum Roshambo {
   ROCK,
 
@@ -704,7 +704,7 @@ public enum Roshambo {
 Fancy enums are supported, where the enum values override methods or call a superclass constructor.
 Here's a comprehensive example:
 
-```java
+```
 TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
     .addModifiers(Modifier.PUBLIC)
     .addEnumConstant("ROCK", TypeSpec.anonymousClassBuilder("$S", "fist")
@@ -729,7 +729,7 @@ TypeSpec helloWorld = TypeSpec.enumBuilder("Roshambo")
 
 Which generates this:
 
-```java
+```
 public enum Roshambo {
   ROCK("fist") {
     @Override
@@ -755,7 +755,7 @@ public enum Roshambo {
 In the enum code, we used `TypeSpec.anonymousInnerClass()`. Anonymous inner classes can also be used in
 code blocks. They are values that can be referenced with `$L`:
 
-```java
+```
 TypeSpec comparator = TypeSpec.anonymousClassBuilder("")
     .addSuperinterface(ParameterizedTypeName.get(Comparator.class, String.class))
     .addMethod(MethodSpec.methodBuilder("compare")
@@ -778,7 +778,7 @@ TypeSpec helloWorld = TypeSpec.classBuilder("HelloWorld")
 
 This generates a method that contains a class that contains a method:
 
-```java
+```
 void sortByLength(List<String> strings) {
   Collections.sort(strings, new Comparator<String>() {
     @Override
@@ -799,7 +799,7 @@ syntax with commas to separate arguments.
 
 Simple annotations are easy:
 
-```java
+```
 MethodSpec toString = MethodSpec.methodBuilder("toString")
     .addAnnotation(Override.class)
     .returns(String.class)
@@ -810,7 +810,7 @@ MethodSpec toString = MethodSpec.methodBuilder("toString")
 
 Which generates this method with an `@Override` annotation:
 
-```java
+```
   @Override
   public String toString() {
     return "Hoverboard";
@@ -819,7 +819,7 @@ Which generates this method with an `@Override` annotation:
 
 Use `AnnotationSpec.builder()` to set properties on annotations:
 
-```java
+```
 MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
     .addAnnotation(AnnotationSpec.builder(Headers.class)
@@ -833,7 +833,7 @@ MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
 
 Which generates this annotation with `accept` and `userAgent` properties:
 
-```java
+```
 @Headers(
     accept = "application/json; charset=utf-8",
     userAgent = "Square Cash"
@@ -844,7 +844,7 @@ LogReceipt recordEvent(LogRecord logRecord);
 When you get fancy, annotation values can be annotations themselves. Use `$L` for embedded
 annotations:
 
-```java
+```
 MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
     .addAnnotation(AnnotationSpec.builder(HeaderList.class)
@@ -864,7 +864,7 @@ MethodSpec logRecord = MethodSpec.methodBuilder("recordEvent")
 
 Which generates this:
 
-```java
+```
 @HeaderList({
     @Header(name = "Accept", value = "application/json; charset=utf-8"),
     @Header(name = "User-Agent", value = "Square Cash")
@@ -879,7 +879,7 @@ of values for that property.
 
 Fields, methods and types can be documented with Javadoc:
 
-```java
+```
 MethodSpec dismiss = MethodSpec.methodBuilder("dismiss")
     .addJavadoc("Hides {@code message} from the caller's history. Other\n"
         + "participants in the conversation will continue to see the\n"
@@ -894,7 +894,7 @@ MethodSpec dismiss = MethodSpec.methodBuilder("dismiss")
 
 Which generates this:
 
-```java
+```
   /**
    * Hides {@code message} from the caller's history. Other
    * participants in the conversation will continue to see the
@@ -911,8 +911,8 @@ Use `$T` when referencing types in Javadoc to get automatic imports.
 Download
 --------
 
-Download [the latest .jar][dl] or depend via Maven:
-```xml
+Download the latest jar or depend via Maven:
+```
 <dependency>
   <groupId>com.squareup</groupId>
   <artifactId>javapoet</artifactId>
@@ -924,12 +924,10 @@ or Gradle:
 compile 'com.squareup:javapoet:1.13.0'
 ```
 
-Snapshots of the development version are available in [Sonatype's `snapshots` repository][snap].
+Snapshots of the development version are available in Sonatype's `snapshots` repository.
 
 
-
-License
--------
+## Original License
 
     Copyright 2015 Square, Inc.
 
@@ -947,22 +945,11 @@ License
 
 
 
-JavaWriter
-==========
+## JavaWriter
 
-jodist is the successor to [JavaWriter][javawriter]. New projects should prefer jodist because
+jodist is the successor to `JavaWriter`. New projects should prefer jodist because
 it has a stronger code model: it understands types and can manage imports automatically. jodist is
 also better suited to composition: rather than streaming the contents of a `.java` file
 top-to-bottom in a single pass, a file can be assembled as a tree of declarations.
 
-JavaWriter continues to be available in [GitHub][javawriter] and [Maven Central][javawriter_maven].
-
-
- [dl]: https://search.maven.org/remote_content?g=com.squareup&a=javapoet&v=LATEST
- [snap]: https://oss.sonatype.org/content/repositories/snapshots/com/squareup/javapoet/
- [javadoc]: https://square.github.io/javapoet/1.x/javapoet/
- [javawriter]: https://github.com/square/javapoet/tree/javawriter_2
- [javawriter_maven]: https://search.maven.org/#artifactdetails%7Ccom.squareup%7Cjavawriter%7C2.5.1%7Cjar
- [formatter]: https://developer.android.com/reference/java/util/Formatter.html
- [modifier]: https://docs.oracle.com/javase/8/docs/api/javax/lang/model/element/Modifier.html
 
